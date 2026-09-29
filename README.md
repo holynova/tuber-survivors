@@ -4,7 +4,7 @@
 
 ![游戏截图](screenshots/gameplay.png)
 
-- 线上试玩（GitHub Pages，手机可玩）：<https://holynova.github.io/tuber-survivors/>
+- 线上试玩（GitHub Pages，电脑键盘操作）：<https://holynova.github.io/tuber-survivors/>
 - 源码仓库：<https://github.com/holynova/tuber-survivors>
 
 手机扫码直接打开：
