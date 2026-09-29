@@ -1,30 +1,18 @@
-# TUBER SURVIVORS — 块茎幸存者
+# Tuber Survivors 块茎幸存者
 
-3D 类幸存者动作游戏（Brotato 风格），Three.js + Vite 构建。在竞技场中抵御一波波外星敌人：武器自动索敌、拾取晶体升级三选一、波次间进商店补给，撑过第 20 波击败终 Boss 即胜利。
+3D 波次生存竞技场（Brotato 风格），Three.js + Vite 打造，CC0 卡通低模 + Bloom 特效。
 
-## 游戏画面
+![游戏截图](screenshots/gameplay.png)
 
-![游戏界面](./screenshot.png)
+- 线上试玩（GitHub Pages，手机可玩）：<https://holynova.github.io/tuber-survivors/>
+- 源码仓库：<https://github.com/holynova/tuber-survivors>
 
-## 在线游玩
+手机扫码直接打开：
 
-- **GitHub Pages**：<https://holynova.github.io/tuber-survivors/>
-- 手机扫码直达：
-
-![二维码](./qrcode.png)
-
-## 本地运行
+![二维码](screenshots/qrcode.png)
 
 ```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run build    # 产出 docs/（GitHub Pages 部署产物）
+npm install && npm run dev   # http://localhost:5173
 ```
 
-## 操作
-
-WASD 移动 · 空格冲刺（短暂无敌）· 武器全自动 · 1/2/3 升级快捷键 · Esc 暂停 · M 静音
-
-## 仓库
-
-<https://github.com/holynova/tuber-survivors>
+WASD 移动、SPACE 冲刺、武器全自动索敌；击杀掉落晶体（经验兼货币），升级三选一，波次间进商店补给。6 名角色、9 把武器、7 种敌人，撑过 20 波击败终 Boss 即胜利。
