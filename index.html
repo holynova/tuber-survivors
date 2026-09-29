@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>TUBER SURVIVORS — 块茎幸存者</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🥔</text></svg>" />
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game-canvas"></canvas>
+
+    <!-- 漂浮伤害数字 / 屏幕特效层 -->
+    <div id="dmg-layer"></div>
+    <div id="fx-layer">
+      <div id="wave-banner" class="hidden"></div>
+      <div id="toast" class="hidden"></div>
+    </div>
+
+    <!-- 标题 -->
+    <section id="screen-title" class="screen">
+      <div class="title-logo">
+        <div class="title-main">TUBER<span>·</span>SURVIVORS</div>
+        <div class="title-sub">块茎幸存者 — 3D 波次生存竞技场</div>
+      </div>
+      <div class="title-menu">
+        <button id="btn-start" class="btn btn-primary">开始游戏</button>
+        <button id="btn-help" class="btn btn-ghost">操作说明</button>
+      </div>
+      <div class="title-foot">WASD 移动 · SPACE 冲刺 · 武器全自动 · ESC 暂停 · M 静音</div>
+    </section>
+
+    <!-- 角色选择 -->
+    <section id="screen-select" class="screen hidden">
+      <header class="select-head">
+        <h2>选择你的幸存者</h2>
+        <p>每位角色拥有独立属性、被动能力与起始武器</p>
+      </header>
+      <div id="char-grid" class="char-grid"></div>
+      <footer class="select-foot">
+        <button id="btn-back-title" class="btn btn-ghost">返回</button>
+      </footer>
+    </section>
+
+    <!-- 帮助 -->
+    <section id="screen-help" class="screen hidden">
+      <div class="panel help-panel">
+        <h2>操作说明</h2>
+        <ul class="help-list">
+          <li><b>WASD / 方向键</b> 移动角色</li>
+          <li><b>SPACE</b> 翻滚冲刺(短暂无敌)</li>
+          <li>武器<b>全自动</b>索敌开火, 近战以移动方向为准</li>
+          <li>击杀敌人掉落<b>晶体</b>: 既是经验也是货币</li>
+          <li>升级时<b>3 选 1</b> 强化; 波次结束进入<b>商店</b>补给</li>
+          <li><b>ESC</b> 暂停 · <b>M</b> 静音</li>
+          <li>存活至第 <b>20 波</b> 击败最终 Boss 即胜利</li>
+        </ul>
+        <button id="btn-close-help" class="btn btn-primary">明白了</button>
+      </div>
+    </section>
+
+    <!-- 战斗 HUD -->
+    <section id="hud" class="hidden">
+      <div class="hud-top">
+        <div class="hud-stat hud-wave">第 <b id="hud-wave">1</b> 波</div>
+        <div class="hud-timer"><div id="hud-timer-bar"></div><span id="hud-timer">22</span></div>
+        <div class="hud-stat hud-crystals">◆ <b id="hud-crystals">0</b></div>
+      </div>
+      <div class="hud-bottom">
+        <div class="hud-vitals">
+          <div class="bar hp-bar"><div id="hp-fill"></div><span id="hp-text">100/100</span></div>
+          <div class="bar xp-bar"><div id="xp-fill"></div><span id="level-text">LV 1</span></div>
+        </div>
+        <div id="hud-weapons" class="hud-weapons"></div>
+        <div class="hud-stats-mini" id="hud-stats-mini"></div>
+      </div>
+      <div id="dash-ring" class="dash-ring ready"></div>
+    </section>
+
+    <!-- 升级 3 选 1 -->
+    <section id="screen-levelup" class="overlay hidden">
+      <div class="overlay-inner">
+        <h2 class="overlay-title glow">升级!</h2>
+        <p class="overlay-sub">选择一项强化</p>
+        <div id="levelup-choices" class="choice-grid"></div>
+      </div>
+    </section>
+
+    <!-- 商店 -->
+    <section id="screen-shop" class="overlay hidden">
+      <div class="overlay-inner shop-inner">
+        <h2 class="overlay-title">补给站</h2>
+        <div class="shop-coins">◆ <b id="shop-coins">0</b></div>
+        <div id="shop-grid" class="shop-grid"></div>
+        <div class="shop-owned">
+          <div class="shop-label">持有武器 <span id="slot-count">0/6</span></div>
+          <div id="shop-slots" class="shop-slots"></div>
+        </div>
+        <div class="shop-actions">
+          <button id="btn-reroll" class="btn btn-ghost">重掷 <span id="reroll-cost">10</span> ◆</button>
+          <button id="btn-sell-mode" class="btn btn-ghost">出售武器</button>
+          <button id="btn-next-wave" class="btn btn-primary">开始第 <span id="next-wave-num">2</span> 波</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 暂停 -->
+    <section id="screen-pause" class="overlay hidden">
+      <div class="overlay-inner">
+        <h2 class="overlay-title">已暂停</h2>
+        <div class="title-menu">
+          <button id="btn-resume" class="btn btn-primary">继续</button>
+          <button id="btn-quit" class="btn btn-ghost">放弃本局</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 结算 -->
+    <section id="screen-over" class="overlay hidden">
+      <div class="overlay-inner">
+        <h2 id="over-title" class="overlay-title">你被淹没了</h2>
+        <div id="over-stats" class="over-stats"></div>
+        <div class="title-menu">
+          <button id="btn-retry" class="btn btn-primary">再来一局</button>
+          <button id="btn-to-title" class="btn btn-ghost">回主菜单</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="loading" class="screen"><div class="loading-mark"></div><div id="loading-label">加载中…</div></div>
+
+    <!-- GitHub 仓库入口 -->
+    <a class="gh-link" href="https://github.com/holynova/tuber-survivors" target="_blank" rel="noopener noreferrer" title="GitHub 仓库">
+      <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      GitHub
+    </a>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
