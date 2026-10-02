@@ -1,0 +1,310 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" width="1200" height="440" role="img" aria-labelledby="title desc">
+  <title id="title">TUBER SURVIVORS — 块茎幸存者</title>
+  <desc id="desc">3D Survivor-like arena game with Brotato pacing built with Three.js and UnrealBloom</desc>
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="tuber-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#070916" />
+      <stop offset="50%" stop-color="#0f142e" />
+      <stop offset="100%" stop-color="#080a18" />
+    </linearGradient>
+    <linearGradient id="tuber-title-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4de8ff" />
+      <stop offset="35%" stop-color="#6bffb0" />
+      <stop offset="70%" stop-color="#ffd257" />
+      <stop offset="100%" stop-color="#ff4d6d" />
+    </linearGradient>
+    <linearGradient id="beam-laser" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#b06bff" stop-opacity="0" />
+      <stop offset="30%" stop-color="#b06bff" stop-opacity="0.9" />
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="100%" stop-color="#e0b0ff" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="cleaver-arc-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d6d" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#ff4d6d" stop-opacity="0" />
+    </linearGradient>
+    <radialGradient id="tuber-body-grad" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#a7f3d0" />
+      <stop offset="40%" stop-color="#34d399" />
+      <stop offset="85%" stop-color="#059669" />
+      <stop offset="100%" stop-color="#064e3b" />
+    </radialGradient>
+    <radialGradient id="tuber-arena-glow" cx="70%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#2a3f7a" stop-opacity="0.3" />
+      <stop offset="60%" stop-color="#121e42" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#070916" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="tuber-grid-pat" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#223563" stroke-width="0.8" stroke-opacity="0.4" />
+    </pattern>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="440" rx="16" fill="url(#tuber-bg)" />
+  <rect width="1200" height="440" rx="16" fill="url(#tuber-arena-glow)" />
+
+  <!-- Outer Cyber Accent Frame -->
+  <rect x="12" y="12" width="1176" height="416" rx="12" fill="none" stroke="#4de8ff" stroke-width="1.2" stroke-opacity="0.4" />
+
+  <!-- Isometric 3D Space Arena Platform (Right Side) -->
+  <g transform="translate(485, 20)">
+    <g transform="matrix(1 0 -0.48 0.52 140 32)" opacity="0.75">
+      <rect x="0" y="0" width="570" height="510" fill="url(#tuber-grid-pat)" />
+      <!-- Luminous Boundary Grid Lines -->
+      <line x1="0" y1="0" x2="570" y2="0" stroke="#4de8ff" stroke-width="2.5" stroke-opacity="0.65" />
+      <line x1="570" y1="0" x2="570" y2="510" stroke="#6bffb0" stroke-width="2.5" stroke-opacity="0.65" />
+      <line x1="570" y1="510" x2="0" y2="510" stroke="#ffd257" stroke-width="2.5" stroke-opacity="0.65" />
+      <line x1="0" y1="510" x2="0" y2="0" stroke="#ff4d6d" stroke-width="2.5" stroke-opacity="0.65" />
+      <!-- Inner Run Circles -->
+      <circle cx="285" cy="255" r="95" fill="none" stroke="#6bffb0" stroke-width="1.2" stroke-dasharray="6 6" stroke-opacity="0.4" />
+      <circle cx="285" cy="255" r="190" fill="none" stroke="#4de8ff" stroke-width="1" stroke-opacity="0.3" />
+    </g>
+  </g>
+
+  <!-- Arena Battle Layer (Right Side: ~860, 220) -->
+  <g id="arena-battle">
+    <!-- Shockwaves & Rings on Ground -->
+    <ellipse cx="865" cy="235" rx="50" ry="22" fill="none" stroke="#6bffb0" stroke-width="2" stroke-opacity="0.7" />
+    <ellipse cx="865" cy="235" rx="100" ry="44" fill="none" stroke="#4de8ff" stroke-width="1.2" stroke-dasharray="6 6" stroke-opacity="0.4" />
+    <ellipse cx="865" cy="235" rx="160" ry="72" fill="none" stroke="#b06bff" stroke-width="0.8" stroke-opacity="0.25" />
+
+    <!-- Weapon 1: Cleaver Giant Slash Arc (身前 120° 巨幅弧光) -->
+    <path d="M 865 210 A 110 55 0 0 1 1010 180" fill="none" stroke="#ff4d6d" stroke-width="9" stroke-linecap="round" stroke-opacity="0.8" />
+    <path d="M 865 210 A 110 55 0 0 1 1010 180" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Weapon 2: Prism Laser Beam (穿透全屏持续光束) -->
+    <line x1="865" y1="210" x2="670" y2="120" stroke="url(#beam-laser)" stroke-width="6.5" stroke-linecap="round" />
+    <line x1="865" y1="210" x2="670" y2="120" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round" />
+
+    <!-- Weapon 3: Mortar Lob & Explosion (落地点冲击) -->
+    <path d="M 865 205 Q 920 120 990 140" fill="none" stroke="#ff8a3d" stroke-width="1.5" stroke-dasharray="3 3" />
+    <g transform="translate(990, 140)">
+      <circle cx="0" cy="0" r="32" fill="#ff4500" fill-opacity="0.3" stroke="#ff8a3d" stroke-width="1.8" />
+      <circle cx="0" cy="0" r="16" fill="#ffd257" fill-opacity="0.8" />
+      <text x="0" y="-36" fill="#ffaa40" font-family="ui-monospace, monospace" font-size="11" font-weight="900" text-anchor="middle">AOE 120</text>
+    </g>
+
+    <!-- Weapon 4: Electric Chain Coil (电弧线圈链跳) -->
+    <path d="M 865 210 L 910 270 L 950 255 L 995 305 L 1045 285" fill="none" stroke="#9fe8ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M 865 210 L 910 270 L 950 255 L 995 305 L 1045 285" fill="none" stroke="#ffffff" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" />
+
+    <!-- Weapon 5: Orbit Blades (常驻环刃围绕角色旋转) -->
+    <g transform="translate(865, 215)">
+      <ellipse cx="0" cy="0" rx="65" ry="28" fill="none" stroke="#6bffb0" stroke-width="1.2" stroke-dasharray="5 5" stroke-opacity="0.6" />
+      <!-- Blade 1 -->
+      <g transform="translate(-62, 5) rotate(20)">
+        <polygon points="0,-4 16,0 0,4 -6,0" fill="#6bffb0" stroke="#059669" stroke-width="1" />
+      </g>
+      <!-- Blade 2 -->
+      <g transform="translate(62, -5) rotate(200)">
+        <polygon points="0,-4 16,0 0,4 -6,0" fill="#6bffb0" stroke="#059669" stroke-width="1" />
+      </g>
+      <!-- Blade 3 -->
+      <g transform="translate(5, 26) rotate(110)">
+        <polygon points="0,-4 16,0 0,4 -6,0" fill="#6bffb0" stroke="#059669" stroke-width="1" />
+      </g>
+    </g>
+
+    <!-- Deployed Sentry Turret (哨戒炮塔) -->
+    <g transform="translate(775, 265)">
+      <rect x="-8" y="-6" width="16" height="12" rx="3" fill="#1e293b" stroke="#ff8a3d" stroke-width="1.5" />
+      <polygon points="0,-14 6,-6 -6,-6" fill="#ff8a3d" />
+      <line x1="0" y1="-10" x2="22" y2="-12" stroke="#ff8a3d" stroke-width="2" />
+      <circle cx="2" cy="-8" r="2" fill="#22c55e" />
+      <text x="0" y="16" fill="#fdba74" font-family="ui-monospace, monospace" font-size="8.5" text-anchor="middle">TURRET</text>
+    </g>
+
+    <!-- Scattered XP Crystals (晶体 = 经验兼货币) with Magnet Trails -->
+    <g transform="translate(805, 170)">
+      <polygon points="0,-6 5,0 0,6 -5,0" fill="#6bffb0" stroke="#059669" stroke-width="0.8" />
+      <path d="M 0 0 Q 30 18 60 38" fill="none" stroke="#6bffb0" stroke-width="0.8" stroke-dasharray="2 2" stroke-opacity="0.6" />
+    </g>
+    <g transform="translate(935, 175)">
+      <polygon points="0,-6 5,0 0,6 -5,0" fill="#4de8ff" stroke="#0284c7" stroke-width="0.8" />
+      <path d="M 0 0 Q -30 18 -70 35" fill="none" stroke="#4de8ff" stroke-width="0.8" stroke-dasharray="2 2" stroke-opacity="0.6" />
+    </g>
+    <g transform="translate(810, 310)">
+      <polygon points="0,-7 6,0 0,7 -6,0" fill="#ffd257" stroke="#b45309" stroke-width="0.8" />
+      <text x="0" y="2.5" fill="#78350f" font-family="ui-monospace, monospace" font-size="5" font-weight="900" text-anchor="middle">★</text>
+    </g>
+
+    <!-- Enemies -->
+    <!-- Mite Swarms (啃食者) -->
+    <g transform="translate(710, 135)">
+      <polygon points="0,-9 8,6 -8,6" fill="#300d1a" stroke="#ff5d7a" stroke-width="1.6" />
+      <text x="0" y="-12" fill="#ff859c" font-family="ui-monospace, monospace" font-size="8.5" text-anchor="middle">MITE</text>
+    </g>
+    <g transform="translate(680, 155)">
+      <polygon points="0,-7 7,5 -7,5" fill="#300d1a" stroke="#ff5d7a" stroke-width="1.5" />
+    </g>
+
+    <!-- Brute (壮肉) -->
+    <g transform="translate(1040, 305)">
+      <polygon points="-16,-9 0,-16 16,-9 16,9 0,16 -16,9" fill="#1b0f2e" stroke="#b06bff" stroke-width="2" />
+      <rect x="-14" y="-23" width="28" height="3" fill="#1e293b" rx="1.5" />
+      <rect x="-14" y="-23" width="20" height="3" fill="#b06bff" rx="1.5" />
+      <text x="0" y="-27" fill="#d8b4fe" font-family="ui-monospace, monospace" font-size="8.5" text-anchor="middle">BRUTE 壮肉</text>
+    </g>
+
+    <!-- Charger (冲锋兽) -->
+    <g transform="translate(905, 290)">
+      <polygon points="0,-12 11,0 0,12 -11,0" fill="#2e1a06" stroke="#ffb04d" stroke-width="1.8" />
+      <line x1="0" y1="-12" x2="18" y2="-4" stroke="#ffb04d" stroke-width="2" stroke-linecap="round" />
+      <text x="0" y="22" fill="#fed7aa" font-family="ui-monospace, monospace" font-size="8" text-anchor="middle">CHARGER</text>
+    </g>
+
+    <!-- Boss: 块茎暴君 (Tyrant - Final Boss) -->
+    <g transform="translate(1085, 95)">
+      <circle cx="0" cy="0" r="42" fill="#2d0b12" stroke="#ff4d6d" stroke-width="2.5" />
+      <!-- Spore Rings -->
+      <circle cx="0" cy="0" r="22" fill="#ff5032" />
+      <circle cx="0" cy="0" r="7" fill="#ffffff" />
+      <!-- Radial Stomp Telegraph Circle -->
+      <circle cx="0" cy="0" r="56" fill="none" stroke="#ff4d6d" stroke-width="1.2" stroke-dasharray="6 4" stroke-opacity="0.8" />
+      <!-- Boss Ring Bullets -->
+      <circle cx="-35" cy="-15" r="3.5" fill="#ff5032" />
+      <circle cx="-32" cy="22" r="3.5" fill="#ff5032" />
+      <circle cx="5" cy="38" r="3.5" fill="#ff5032" />
+      <circle cx="36" cy="18" r="3.5" fill="#ff5032" />
+      <!-- Boss Label Tag -->
+      <rect x="-42" y="-36" width="84" height="15" rx="3" fill="#18040a" stroke="#ff4d6d" stroke-width="1" />
+      <text x="0" y="-25" fill="#fecdd3" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="800" text-anchor="middle">BOSS · 块茎暴君</text>
+    </g>
+
+    <!-- THE HERO: TUBER CHAMPION (Center: 865, 205) -->
+    <g transform="translate(865, 205)">
+      <!-- Shadow -->
+      <ellipse cx="0" cy="28" rx="22" ry="8" fill="#000000" fill-opacity="0.6" />
+      <!-- Low-poly Tuber Body (Capsule/Potato with facets) -->
+      <path d="M -18,6 C -22,-15 -14,-32 0,-32 C 14,-32 22,-15 18,6 C 16,21 11,27 0,27 C -11,27 -16,21 -18,6 Z" fill="url(#tuber-body-grad)" stroke="#6bffb0" stroke-width="2.2" />
+      <!-- Hero Goggles / Cyber Visor -->
+      <rect x="-14" y="-12" width="28" height="9" rx="4.5" fill="#0f172a" stroke="#4de8ff" stroke-width="1.2" />
+      <rect x="-11" y="-10" width="10" height="5" rx="2.5" fill="#4de8ff" />
+      <rect x="1" y="-10" width="10" height="5" rx="2.5" fill="#4de8ff" />
+      <!-- Metallic Armor Chest Plate -->
+      <polygon points="-10,5 0,-1 10,5 6,18 -6,18" fill="#065f46" stroke="#34d399" stroke-width="1" />
+      <circle cx="0" cy="8" r="2.5" fill="#ffd257" />
+
+      <!-- Equipped Weapons Attached to Tuber Body -->
+      <!-- Hand 1: Cleaver (Giant Axe) -->
+      <g transform="translate(24, 0) rotate(30)">
+        <line x1="0" y1="-8" x2="0" y2="14" stroke="#713f12" stroke-width="2.5" />
+        <path d="M 0,-8 C 12,-16 16,0 0,6 Z" fill="#ff4d6d" stroke="#b91c1c" stroke-width="1" />
+      </g>
+      <!-- Hand 2: Rivet Pistol / SMG -->
+      <g transform="translate(-24, 6) rotate(-20)">
+        <rect x="-10" y="-3" width="14" height="6" rx="1.5" fill="#4de8ff" stroke="#0284c7" stroke-width="0.8" />
+      </g>
+    </g>
+
+    <!-- Floating Damage Numbers -->
+    <text x="820" y="145" fill="#ffd257" font-family="ui-monospace, monospace" font-size="14" font-weight="900">CRIT! 240</text>
+    <text x="1005" y="235" fill="#ff4d6d" font-family="ui-monospace, monospace" font-size="11" font-weight="700">SLASH -68</text>
+    <text x="695" y="200" fill="#c084fc" font-family="ui-monospace, monospace" font-size="11" font-weight="700">BEAM -30/s</text>
+  </g>
+
+  <!-- Left Side: Title & Project Identity -->
+  <g id="title-block" transform="translate(56, 44)">
+    <!-- Header Badges -->
+    <g transform="translate(0, 0)">
+      <rect x="0" y="0" width="138" height="24" rx="6" fill="#0d1b30" stroke="#0284c7" stroke-width="1" />
+      <circle cx="12" cy="12" r="4" fill="#38bdf8" />
+      <text x="24" y="16" fill="#7dd3fc" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">THREE.JS 0.186</text>
+
+      <rect x="146" y="0" width="144" height="24" rx="6" fill="#09261c" stroke="#059669" stroke-width="1" />
+      <circle cx="158" cy="12" r="4" fill="#34d399" />
+      <text x="170" y="16" fill="#6ee7b7" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">UNREAL BLOOM POST</text>
+
+      <rect x="298" y="0" width="128" height="24" rx="6" fill="#2d1c0b" stroke="#d97706" stroke-width="1" />
+      <circle cx="310" cy="12" r="4" fill="#fbbf24" />
+      <text x="322" y="16" fill="#fde68a" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">BROTATO-LIKE ARENA</text>
+    </g>
+
+    <!-- Main Title -->
+    <g transform="translate(0, 54)">
+      <text x="0" y="44" fill="url(#tuber-title-grad)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif" font-size="44" font-weight="900" letter-spacing="2">TUBER SURVIVORS</text>
+      <text x="0" y="78" fill="#e2e8f0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif" font-size="21" font-weight="600">
+        块茎幸存者 <tspan fill="#64748b" font-weight="400">|</tspan> <tspan fill="#6bffb0" font-size="18">3D 俯视角波次竞技场肉鸽</tspan>
+      </text>
+    </g>
+
+    <!-- Punchy Description -->
+    <g transform="translate(0, 160)">
+      <text x="0" y="0" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif" font-size="14.5" font-weight="400">
+        致敬《土豆兄弟》波次生存循环，Three.js 3D 渲染与 UnrealBloom 霓虹特效。
+      </text>
+      <text x="0" y="24" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', sans-serif" font-size="14.5" font-weight="400">
+        晶体 XP 兼货币双轨经济，6 名特化英雄、9 把质变军械、三选一升级与波间商店补给！
+      </text>
+    </g>
+
+    <!-- HUD Arsenal & Status Deck -->
+    <g transform="translate(0, 212)">
+      <rect x="0" y="0" width="460" height="88" rx="10" fill="#090e20" fill-opacity="0.92" stroke="#1e2c56" stroke-width="1.2" />
+
+      <!-- HP & Crystal Bank -->
+      <g transform="translate(18, 16)">
+        <text x="0" y="10" fill="#64748b" font-family="ui-monospace, monospace" font-size="10" font-weight="700">HP LIFE</text>
+        <rect x="65" y="0" width="130" height="12" rx="3" fill="#1e293b" />
+        <rect x="65" y="0" width="115" height="12" rx="3" fill="#10b981" />
+        <text x="202" y="10" fill="#34d399" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">180/200</text>
+
+        <text x="0" y="30" fill="#64748b" font-family="ui-monospace, monospace" font-size="10" font-weight="700">CRYSTALS</text>
+        <rect x="65" y="20" width="130" height="12" rx="3" fill="#1e293b" />
+        <rect x="65" y="20" width="98" height="12" rx="3" fill="#38bdf8" />
+        <text x="202" y="30" fill="#7dd3fc" font-family="ui-monospace, monospace" font-size="10.5" font-weight="700">💎 142 (XP/$$)</text>
+      </g>
+
+      <!-- Wave 20 / Boss Warning Box -->
+      <g transform="translate(305, 16)">
+        <rect x="0" y="0" width="138" height="52" rx="6" fill="#240c14" stroke="#ff4d6d" stroke-width="1" />
+        <text x="69" y="18" fill="#ff4d6d" font-family="ui-monospace, monospace" font-size="10" font-weight="800" text-anchor="middle" letter-spacing="1">WAVE 20 / 20</text>
+        <text x="69" y="36" fill="#fecdd3" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="700" text-anchor="middle">决战：块茎暴君</text>
+      </g>
+
+      <!-- 6 Weapon Slots (Pistol, Cleaver, Orbit Blades, Mortar, Beam, Turret) -->
+      <g transform="translate(18, 58)">
+        <text x="0" y="16" fill="#64748b" font-family="ui-monospace, monospace" font-size="10" font-weight="700">6 SLOTS:</text>
+        <!-- Cleaver -->
+        <rect x="66" y="4" width="58" height="18" rx="4" fill="#2a0d16" stroke="#ff4d6d" stroke-width="1" />
+        <text x="95" y="16" fill="#fda4af" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">巨斧 传说</text>
+        <!-- Orbit Blades -->
+        <rect x="130" y="4" width="58" height="18" rx="4" fill="#0a291b" stroke="#6bffb0" stroke-width="1" />
+        <text x="159" y="16" fill="#6ee7b7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">环刃 史诗</text>
+        <!-- Prism Beam -->
+        <rect x="194" y="4" width="58" height="18" rx="4" fill="#220d34" stroke="#b06bff" stroke-width="1" />
+        <text x="223" y="16" fill="#d8b4fe" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">光束 史诗</text>
+        <!-- Mortar -->
+        <rect x="258" y="4" width="58" height="18" rx="4" fill="#2b1406" stroke="#ff8a3d" stroke-width="1" />
+        <text x="287" y="16" fill="#fdba74" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">迫击炮 精良</text>
+        <!-- Turret -->
+        <rect x="322" y="4" width="58" height="18" rx="4" fill="#291a06" stroke="#ffd257" stroke-width="1" />
+        <text x="351" y="16" fill="#fde047" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">炮塔 精良</text>
+        <!-- Shotgun -->
+        <rect x="386" y="4" width="58" height="18" rx="4" fill="#0c2336" stroke="#4de8ff" stroke-width="1" />
+        <text x="415" y="16" fill="#7dd3fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9" font-weight="700" text-anchor="middle">霰弹 普通</text>
+      </g>
+    </g>
+
+    <!-- Bottom Feature Highlights -->
+    <g transform="translate(0, 318)">
+      <g transform="translate(0, 0)">
+        <text x="0" y="16" fill="#4de8ff" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700">6 名特化英雄</text>
+        <text x="0" y="34" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">坦克/疾风/炮手/狂战/工匠/法师</text>
+      </g>
+      <g transform="translate(126, 0)">
+        <text x="0" y="16" fill="#6bffb0" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700">9 种质变军械</text>
+        <text x="0" y="34" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">近战/远程/元素/部署 4 级稀有度</text>
+      </g>
+      <g transform="translate(254, 0)">
+        <text x="0" y="16" fill="#ffd257" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700">晶体双轨经济</text>
+        <text x="0" y="34" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">XP即金币，波间 16 种道具商店</text>
+      </g>
+      <g transform="translate(388, 0)">
+        <text x="0" y="16" fill="#ff4d6d" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="14" font-weight="700">20 波与终极泰坦</text>
+        <text x="0" y="34" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5">菌王与块茎暴君 4 阶段全屏弹幕</text>
+      </g>
+    </g>
+  </g>
+</svg>
