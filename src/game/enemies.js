@@ -185,7 +185,7 @@ export class EnemySystem {
       hp: 1, maxHp: 1, radius: 0.5, size: 1, sizeMul: 1, facing: 0, phase: Math.random() * 10,
       flash: 0, spawnK: 0, state: 'seek', timer: 0, shootCd: 0, contactCd: 0,
       stun: 0, burn: 0, burnDps: 0, burnTick: 0, boss: false,
-      suppression: 0, lastTarget: null, dmg: 10, speed: 4,
+      dmg: 10, speed: 4,
       summonCd: 4, skillCd: 3, dashT: 0, dashX: 0, dashZ: 0, isBoss: false,
     };
   }
@@ -207,11 +207,10 @@ export class EnemySystem {
     e.dmg = def.dmg * dmgMult;
     e.speed = def.speed * (0.92 + Math.random() * 0.18);
     e.facing = Math.atan2(this.game.player.x - x, this.game.player.z - z);
-    e.flash = 0; e.spawnK = 0.01;
+    e.flash = 0; e.spawnK = 0.01; e._exploded = false;
     e.state = 'seek'; e.timer = 0;
     e.shootCd = (def.shootCd || 2) * (0.6 + Math.random() * 0.7);
     e.contactCd = 0; e.stun = 0; e.burn = 0; e.burnDps = 0;
-    e.suppression = 0; e.lastTarget = null;
     e.hpMult = hpMult; e.dmgMult = dmgMult;
     e.boss = !!def.boss; e.isBoss = !!def.boss;
     e.summonCd = 5; e.skillCd = 4.5;
@@ -374,6 +373,7 @@ export class EnemySystem {
     } else if (def.bomber) {
       const blast = def.blastRadius || 3;
       if (d < blast * 0.95) {
+        e._exploded = true;
         this.game.explode(e.x, e.z, { radius: blast, damage: e.dmg, color: 0xffe14d, fromEnemy: true });
         this._killRaw(e, false);
         return;
@@ -418,8 +418,6 @@ export class EnemySystem {
         g.shake(0.7);
         const R = 7.5;
         if (dist2(e.x, e.z, p.x, p.z) < R * R) p.takeDamage(e.dmg, { fromX: e.x, fromZ: e.z });
-        // 环形冲击伤害(弹开)
-        g.damageRing(e.x, e.z, R, e.dmg * 0.8, e);
       } else if (skill === 'charge') {
         e.state = 'telegraph';
         e.timer = 0.85;
@@ -447,7 +445,7 @@ export class EnemySystem {
       e.summonCd = 8;
       for (let i = 0; i < 3; i++) {
         const a = Math.random() * Math.PI * 2;
-        this.spawn('mite', e.x + Math.cos(a) * 3, e.z + Math.sin(a) * 3, {});
+        this.spawn('mite', e.x + Math.cos(a) * 3, e.z + Math.sin(a) * 3, { hpMult: e.hpMult || 1, dmgMult: e.dmgMult || 1 });
       }
     }
   }
@@ -486,9 +484,10 @@ export class EnemySystem {
     g.audio.kill();
     if (e.isBoss) { g.shake(1.1); g.audio.explode(); }
 
-    // 自爆虫
-    if (def.bomber) {
-      g.explode(e.x, e.z, { radius: def.blastRadius, damage: def.dmg * (e.hpMult || 1), color: 0xffe14d, fromEnemy: true });
+    // 自爆虫 (死亡爆裂; 贴身自爆已炸过一次, 不再重复)
+    if (def.bomber && !e._exploded) {
+      e._exploded = true;
+      g.explode(e.x, e.z, { radius: def.blastRadius, damage: e.dmg, color: 0xffe14d, fromEnemy: true });
     }
     if (drop) {
       g.pickups.dropCrystal(e.x, e.z, def.xp, def.accent);

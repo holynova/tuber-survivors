@@ -223,6 +223,11 @@ export class WeaponSystem {
       w.model = null;
     }
     for (const b of w.blades) b.visible = false;
+    // 出售炮塔武器时一并拆除已部署的炮塔
+    if (w.def.kind === 'deploy') {
+      for (const t of this.turrets.filter((t) => t.w === w)) this._disposeTurret(t);
+      this.turrets = this.turrets.filter((t) => t.w !== w);
+    }
     this.list.splice(index, 1);
     this.list.forEach((x, i) => (x.mountIndex = i));
     this._remountAll();
@@ -305,7 +310,8 @@ export class WeaponSystem {
   _cooldown(w) {
     const st = this.game.stats;
     let cd = w.def.cooldown;
-    if (w.defId === 'smg' && w.tier >= 2) cd *= w.tier === 3 ? 0.7 : 0.85;
+    // 射速加成按 1/(1+加成) 折算冷却: +15% 射速 -> cd ×0.87, +30% -> cd ×0.77
+    if (w.defId === 'smg' && w.tier >= 2) cd *= w.tier === 3 ? 0.77 : 0.87;
     return cd / st.get('attackSpeedMult');
   }
 
@@ -379,7 +385,8 @@ export class WeaponSystem {
           const jitter = count > 1 ? (i / (count - 1) - 0.5) * spread + rand(-0.04, 0.04) : rand(-spread, spread);
           const a = angle + jitter;
           const speed = def.projSpeed * rand(0.96, 1.04);
-          const pierce = def.pierce + (def.id === 'pistol' && w.tier >= 2 ? w.tier - 1 : 0);
+          const pierce = def.pierce + (def.id === 'pistol' && w.tier >= 2 ? w.tier - 1 : 0)
+            + (def.id === 'shotgun' && w.tier >= 3 ? 1 : 0);
           g.projectiles.fire({
             x: fromX, y: 1.0, z: fromZ,
             vx: Math.sin(a) * speed, vz: Math.cos(a) * speed,
@@ -401,7 +408,7 @@ export class WeaponSystem {
       case 'cleaver': {
         const roll = g.rollDamage(base, 'melee');
         const arc = def.arc + w.tier * 0.12;
-        const radius = (def.radius + w.tier * 0.35) * 1;
+        const radius = def.radius * [1, 1.1, 1.2, 1.35][w.tier];
         this.swings.spawn(p.x, p.z, angle, { radius, arc, color: def.hex, life: 0.32 });
         g.particles.burst(p.x + Math.sin(angle) * radius * 0.6, 0.9, p.z + Math.cos(angle) * radius * 0.6, {
           count: 16, colors: [def.hex, 0xffffff], speed: 10, size: 0.55, life: 0.4,
@@ -430,7 +437,7 @@ export class WeaponSystem {
       }
       case 'mortar': {
         const roll = g.rollDamage(base, 'elem');
-        const aoe = (def.aoe + w.tier * 0.35) * g.stats.get('aoeMult');
+        const aoe = def.aoe * [1, 1.1, 1.2, 1.35][w.tier] * g.stats.get('aoeMult');
         // 预判目标位置
         const lead = 0.55;
         const tx = clamp(target.x + target.vx * lead, -g.arenaLimit + 1, g.arenaLimit - 1);
@@ -453,7 +460,8 @@ export class WeaponSystem {
       case 'chain': {
         const jumps = def.jumps + w.tier + (g.player.ch.passive.id === 'capacitor' ? 2 : 0);
         const roll = g.rollDamage(base, 'elem');
-        const stunChance = 0.15 + (w.tier === 3 ? 0.25 : 0);
+        // 传说词缀眩晕 25%; 基础 15% 眩晕是梅琳被动, 在 hitEnemy 中按角色判定
+        const stunChance = w.tier === 3 ? 0.25 : 0;
         let cur = target;
         const hitSet = new Set();
         let px = p.x, py = 1.5, pz = p.z;
@@ -471,7 +479,7 @@ export class WeaponSystem {
       }
       case 'beam': {
         const roll = g.rollDamage(base, 'elem');
-        const len = (def.length + w.tier * 1.4) * g.stats.get('rangeMult');
+        const len = def.length * [1, 1.15, 1.3, 1.5][w.tier] * g.stats.get('rangeMult');
         const ex = p.x + Math.sin(angle) * len;
         const ez = p.z + Math.cos(angle) * len;
         g.beams.spawn(p.x, p.z, ex, ez, { color: def.hex, width: 0.14 + w.tier * 0.03, y: 1.0, life: 0.4, glow: 0.7 });
@@ -507,7 +515,6 @@ export class WeaponSystem {
     const spin = def.spin + w.tier * 0.35;
     const radius = def.radius + w.tier * 0.1;
     const base = g.elapsed * spin + w.uid;
-    const roll = g.rollDamage(def.damage * TIER_MULT[w.tier], 'melee');
     w.orbitK = (w.orbitK || 0) + dt;
 
     for (let i = 0; i < w.blades.length; i++) {
@@ -533,6 +540,8 @@ export class WeaponSystem {
         const near = g.enemies.enemiesInRadius(x, z, 0.75);
         if (near.length) {
           w.hitMap.set(key, def.cooldown);
+          // 仅命中时掷伤害 (避免每帧空掷消耗薇拉残影等一次性增益)
+          const roll = g.rollDamage(def.damage * TIER_MULT[w.tier], 'melee');
           for (const e of near) {
             g.hitEnemy(e, roll.dmg, {
               kb: def.knockback * g.stats.get('knockbackMult'), dirx: e.x - p.x, dirz: e.z - p.z,
@@ -635,12 +644,17 @@ export class WeaponSystem {
           const roll = g.rollDamage(t.w.def.damage * TIER_MULT[t.w.tier] * (g.player.ch.passive.id === 'engineer' ? 1.6 : 1), 'ranged');
           const bx = t.x + Math.sin(t.angle) * 0.5;
           const bz = t.z + Math.cos(t.angle) * 0.5;
-          g.projectiles.fire({
-            x: bx, y: 0.6, z: bz,
-            vx: Math.sin(t.angle) * 36, vz: Math.cos(t.angle) * 36,
-            damage: roll.dmg, crit: roll.crit, radius: 0.3, life: range / 36 + 0.3,
-            pierce: t.w.tier >= 3 ? 1 : 0, kb: 2, color: t.w.def.hex, source: t.w, kind: 'bullet', trail: 0.3,
-          });
+          // 传说双联装: 两发并射 (微小角度差)
+          const shots = t.w.tier >= 3 ? [-0.06, 0.06] : [0];
+          for (const off of shots) {
+            const a = t.angle + off;
+            g.projectiles.fire({
+              x: bx, y: 0.6, z: bz,
+              vx: Math.sin(a) * 36, vz: Math.cos(a) * 36,
+              damage: roll.dmg, crit: roll.crit, radius: 0.3, life: range / 36 + 0.3,
+              pierce: t.w.tier >= 3 ? 1 : 0, kb: 2, color: t.w.def.hex, source: t.w, kind: 'bullet', trail: 0.3,
+            });
+          }
           g.particles.burst(bx, 0.6, bz, { count: 5, colors: [t.w.def.hex, 0xffffff], speed: 6, size: 0.4, life: 0.2, dx: Math.sin(t.angle), dz: Math.cos(t.angle), dy: 0.1, spread: 0.6 });
           g.audio.shoot('turret');
         }

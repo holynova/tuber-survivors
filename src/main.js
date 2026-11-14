@@ -2,7 +2,10 @@ import { Game } from './game/game.js';
 import { loadAssets } from './assets/models.js';
 
 const params = new URLSearchParams(location.search);
-const quality = params.get('fx') === 'low' ? 'low' : 'high';
+// 触屏设备默认低画质 (关闭阴影/辉光, 帧率更稳); ?fx=high 可强制高画质
+const fxParam = params.get('fx');
+const quality = fxParam === 'low' ? 'low' : fxParam === 'high' ? 'high'
+  : (window.matchMedia?.('(pointer: coarse)').matches ? 'low' : 'high');
 const autoChar = params.get('char');
 
 const loadingLabel = document.getElementById('loading-label');
@@ -10,7 +13,7 @@ const loadingLabel = document.getElementById('loading-label');
 async function boot() {
   // 预载 3D 模型 (失败自动回退程序化外观)
   await loadAssets((done, total, id) => {
-    if (loadingLabel) loadingLabel.textContent = `加载模型 ${done} / ${total} · ${id}`;
+    if (loadingLabel) loadingLabel.textContent = `加载模型 ${done}/${total} ${id}`;
   });
 
   const canvas = document.getElementById('game-canvas');
