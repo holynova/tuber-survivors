@@ -40,8 +40,8 @@ export class PickupSystem {
 
   dropCrystal(x, z, amount = 1, color = 0x4de8ff) {
     if (this.gems.length >= 400) {
-      // 溢出: 直接并入最近的一颗
-      this._collect(this.gems[0], amount);
+      // 溢出: 直接按新晶体面值入账 (不并入已有晶体, 避免重复记账)
+      this.game.collectCrystal({ amount, value: amount });
       return;
     }
     const g = this.pool.pop() || {};

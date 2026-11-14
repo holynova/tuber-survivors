@@ -1,4 +1,4 @@
-import { CHARACTERS, WEAPONS, TIER_NAMES, TIER_COLORS, ITEMS } from './data.js';
+import { CHARACTERS, WEAPONS, TIER_NAMES, TIER_COLORS, TIER_MULT, ITEMS } from './data.js';
 import { MAX_WEAPONS } from './weapons.js';
 
 const $ = (id) => document.getElementById(id);
@@ -28,12 +28,62 @@ export class UI {
     $('btn-close-help').onclick = () => { this.game.audio.ui(); this.show(this.game.state === 'title' ? 'title' : 'pause'); };
     $('btn-back-title').onclick = () => { this.game.audio.ui(); this.show('title'); };
     $('btn-resume').onclick = () => { this.game.audio.ui(); this.game.togglePause(false); };
-    $('btn-quit').onclick = () => { this.game.audio.ui(); this.game.abandonRun(); };
+    $('btn-quit').onclick = () => {
+      if (!window.confirm('放弃本局？当前进度将丢失。')) return;
+      this.game.audio.ui(); this.game.abandonRun();
+    };
     $('btn-retry').onclick = () => { this.game.audio.ui(); this.showSelect(); };
     $('btn-to-title').onclick = () => { this.game.audio.ui(); this.show('title'); };
     $('btn-next-wave').onclick = () => { this.game.audio.ui(); this.game.startNextWave(); };
     $('btn-reroll').onclick = () => this.game.rerollShop();
     $('btn-sell-mode').onclick = () => this.game.toggleSellMode();
+    this._bindTouch();
+  }
+
+  // ---------- 触屏控制 ----------
+  _bindTouch() {
+    const stick = $('touch-stick');
+    const knob = $('touch-knob');
+    if (!stick || !knob) return;
+    const input = this.game.input;
+    const R = 44;
+    let id = null;
+    const setKnob = (dx, dy) => { knob.style.transform = `translate(${dx}px, ${dy}px)`; };
+    const update = (t) => {
+      const r = stick.getBoundingClientRect();
+      let dx = t.clientX - (r.left + r.width / 2);
+      let dy = t.clientY - (r.top + r.height / 2);
+      const len = Math.hypot(dx, dy);
+      if (len > R) { dx = (dx / len) * R; dy = (dy / len) * R; }
+      setKnob(dx, dy);
+      input.touchMove.x = dx / R;
+      input.touchMove.z = dy / R;
+    };
+    const reset = () => { id = null; setKnob(0, 0); input.touchMove.x = 0; input.touchMove.z = 0; };
+    stick.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const t = e.changedTouches[0];
+      id = t.identifier;
+      update(t);
+    }, { passive: false });
+    stick.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      for (const t of e.changedTouches) if (t.identifier === id) update(t);
+    }, { passive: false });
+    const end = (e) => {
+      for (const t of e.changedTouches) if (t.identifier === id) reset();
+    };
+    stick.addEventListener('touchend', end);
+    stick.addEventListener('touchcancel', end);
+    $('touch-dash').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      input.touchDash = true;
+    }, { passive: false });
+    $('touch-pause').addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      this.game.audio.ui();
+      this.game.togglePause(true);
+    }, { passive: false });
   }
 
   show(name) {
@@ -75,6 +125,7 @@ export class UI {
           <div class="stat-row"><b>HP ${ch.base.maxHP}</b><div class="stat-track"><i style="width:${Math.min(100, ch.base.maxHP / 2.2)}%"></i></div></div>
           ${bars}
         </div>
+        <div class="char-mods">${this._modLine(ch)}</div>
         <div class="char-passive"><b>${ch.passive.name}</b> — ${ch.passive.desc}</div>
         <div class="char-weapon">起始武器: ${wpn.icon} ${wpn.name}</div>
         <div class="char-passive" style="border-color:rgba(255,255,255,.2);color:#8ba3bd">${ch.blurb}</div>
@@ -83,6 +134,50 @@ export class UI {
       grid.appendChild(card);
     }
     this.show('select');
+  }
+
+  // 角色属性倾斜 (与 Stats 叠加规则一致: Mult 为倍率, 暴击显示总计)
+  _modLine(ch) {
+    const b = ch.base;
+    const parts = [];
+    const pct = (v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)}%`;
+    const mults = [
+      ['damageMult', '伤害'], ['meleeMult', '近战'], ['rangedMult', '远程'], ['elemMult', '元素'],
+      ['attackSpeedMult', '攻速'], ['moveSpeedMult', '移速'], ['pickupMult', '拾取'], ['knockbackMult', '击退'],
+    ];
+    for (const [k, label] of mults) {
+      if (b[k] != null && Math.abs(b[k] - 1) >= 0.05) parts.push(`${label} ${pct(b[k] - 1)}`);
+    }
+    parts.push(`暴击 ${Math.round((0.05 + (b.critChance || 0)) * 100)}%`);
+    if ((b.dodge || 0) > 0) parts.push(`闪避 ${Math.round(b.dodge * 100)}%`);
+    if ((b.armor || 0) > 0) parts.push(`护甲 ${b.armor}`);
+    if ((b.lifesteal || 0) > 0) parts.push(`吸血 ${Math.round(b.lifesteal * 100)}%`);
+    return parts.join(' / ');
+  }
+
+  // ---------- 暂停 (含属性面板) ----------
+  showPause() {
+    const g = this.game;
+    const p = g.player;
+    const st = g.stats;
+    const rows = [
+      ['角色', p.ch.name],
+      ['等级', `LV ${g.level}`],
+      ['波次', `第 ${g.wave} 波`],
+      ['击杀', `${g.kills}`],
+      ['晶体', `${g.crystals} ◆`],
+      ['生命', `${Math.ceil(p.hp)}/${Math.round(p.maxHp())}`],
+      ['伤害', `${Math.round(st.get('damageMult') * 100)}%`],
+      ['攻速', `${Math.round(st.get('attackSpeedMult') * 100)}%`],
+      ['移速', `${Math.round(st.get('moveSpeedMult') * 100)}%`],
+      ['暴击', `${Math.round(st.get('critChance') * 100)}%`],
+      ['护甲', `${Math.round(st.get('armor'))}`],
+    ];
+    const wpns = g.weapons.list.map((w) => `${w.def.icon} ${w.def.name} (${TIER_NAMES[w.tier]})`).join(' / ') || '无';
+    $('pause-stats').innerHTML = `
+      <div class="pause-grid">${rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>
+      <div class="pause-weapons">武器：${wpns}</div>`;
+    this.show('pause');
   }
 
   // ---------- HUD ----------
@@ -117,12 +212,15 @@ export class UI {
 
     // 冲刺
     const ready = p.dashCd <= 0;
+    const td = $('touch-dash');
     if (this._dashReady !== ready) {
       this._dashReady = ready;
       this.dashRing.classList.toggle('ready', ready);
       this.dashRing.textContent = ready ? '冲刺' : `${p.dashCd.toFixed(1)}s`;
+      if (td) { td.classList.toggle('ready', ready); td.textContent = ready ? '冲刺' : `${p.dashCd.toFixed(1)}s`; }
     } else if (!ready) {
       this.dashRing.textContent = `${p.dashCd.toFixed(1)}s`;
+      if (td) td.textContent = `${p.dashCd.toFixed(1)}s`;
     }
 
     // Boss 血条(用波次计时区显示)
@@ -175,7 +273,7 @@ export class UI {
       chip.innerHTML = `<span class="dot"></span>${w.def.icon} ${w.def.name}<span style="color:${TIER_COLORS[w.tier]};font-size:10px;margin-left:4px">${TIER_NAMES[w.tier]}</span>`;
       wrap.appendChild(chip);
     }
-    for (let i = g.weapons.count; i < 3; i++) {
+    for (let i = g.weapons.count; i < MAX_WEAPONS; i++) {
       const chip = document.createElement('div');
       chip.className = 'wpn-chip';
       chip.style.opacity = '0.35';
@@ -186,6 +284,15 @@ export class UI {
 
   // ---------- 升级 3 选 1 ----------
   showLevelUp(choices, cb) {
+    // 先清掉上一次的监听 (避免多次升级叠加导致一次按键触发多次)
+    this._cleanupLevelKey?.();
+    const handler = (e) => {
+      const idx = { Digit1: 0, Digit2: 1, Digit3: 2 }[e.code];
+      if (idx != null && choices[idx]) { cleanup(); cb(choices[idx]); this.game.audio.levelup(); }
+    };
+    const cleanup = () => window.removeEventListener('keydown', handler);
+    window.addEventListener('keydown', handler);
+    this._cleanupLevelKey = cleanup;
     const wrap = $('levelup-choices');
     wrap.innerHTML = '';
     choices.forEach((c, i) => {
@@ -198,19 +305,11 @@ export class UI {
         <div class="choice-name">${c.name}</div>
         <div class="choice-desc">${c.desc}</div>
       `;
-      card.onclick = () => { this.game.audio.levelup(); cb(c); };
+      card.onclick = () => { cleanup(); this.game.audio.levelup(); cb(c); };
       wrap.appendChild(card);
       // 键盘快捷键 1/2/3
       card.dataset.idx = i;
     });
-    this._levelKey = (e) => {
-      const idx = { Digit1: 0, Digit2: 1, Digit3: 2 }[e.code];
-      if (idx != null && choices[idx]) { cleanup(); cb(choices[idx]); this.game.audio.levelup(); }
-      if (e.code === 'Escape') e.stopPropagation();
-    };
-    const cleanup = () => window.removeEventListener('keydown', this._levelKey);
-    window.addEventListener('keydown', this._levelKey);
-    this._cleanupLevelKey = cleanup;
     this.show('levelup');
   }
 
@@ -230,7 +329,7 @@ export class UI {
       card.style.setProperty('--card', offer.color);
       if (offer.sold) card.classList.add('sold');
       if (offer.cost > data.coins) card.classList.add('too-expensive');
-      const kindLabel = offer.kind === 'weapon' ? `武器 · ${TIER_NAMES[offer.tier]}` : `道具 · ${TIER_NAMES[offer.tier]}`;
+      const kindLabel = offer.kind === 'weapon' ? `武器 / ${TIER_NAMES[offer.tier]}` : `道具 / ${TIER_NAMES[offer.tier]}`;
       card.innerHTML = `
         <div class="si-top"><span>${kindLabel}</span><span>${offer.kind === 'weapon' ? '⚔' : '✚'}</span></div>
         <div class="si-icon">${offer.icon}</div>
@@ -249,10 +348,10 @@ export class UI {
       const el = document.createElement('div');
       el.className = 'slot' + (data.sellMode ? ' sellable' : '');
       el.style.setProperty('--card', TIER_COLORS[w.tier]);
-      const dmg = Math.round(w.def.damage * (1 + w.tier * 0.45));
+      const dmg = Math.round(w.def.damage * TIER_MULT[w.tier]);
       el.innerHTML = `
         <div class="s-name">${w.def.icon} ${w.def.name}</div>
-        <div class="s-tier">${TIER_NAMES[w.tier]} · 伤害 ${dmg}</div>
+        <div class="s-tier">${TIER_NAMES[w.tier]} / 伤害 ${dmg}</div>
         <div class="s-dmg">${data.sellMode ? `出售 +${this.game.sellValue(w)} ◆` : w.def.desc.slice(0, 16) + '…'}</div>
       `;
       el.onclick = () => this.game.sellWeapon(i);

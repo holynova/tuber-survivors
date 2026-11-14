@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <title>TUBER SURVIVORS — 块茎幸存者</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🥔</text></svg>" />
-  <script type="module" crossorigin src="./assets/index-_NXSjPDS.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-CCRFsElr.css">
+  <script type="module" crossorigin src="./assets/index-BRbnQrHu.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BnwmYtw5.css">
 </head>
 <body>
   <div id="app">
@@ -22,14 +22,15 @@
     <!-- 标题 -->
     <section id="screen-title" class="screen">
       <div class="title-logo">
-        <div class="title-main">TUBER<span>·</span>SURVIVORS</div>
+        <div class="title-main">TUBER SURVIVORS</div>
         <div class="title-sub">块茎幸存者 — 3D 波次生存竞技场</div>
       </div>
       <div class="title-menu">
         <button id="btn-start" class="btn btn-primary">开始游戏</button>
         <button id="btn-help" class="btn btn-ghost">操作说明</button>
       </div>
-      <div class="title-foot">WASD 移动 · SPACE 冲刺 · 武器全自动 · ESC 暂停 · M 静音</div>
+      <div class="title-foot foot-kb">WASD 移动 / SPACE 冲刺 / 武器全自动 / ESC 暂停 / M 静音</div>
+      <div class="title-foot foot-touch">左摇杆移动 / 点冲刺翻滚 / 武器全自动</div>
     </section>
 
     <!-- 角色选择 -->
@@ -48,13 +49,22 @@
     <section id="screen-help" class="screen hidden">
       <div class="panel help-panel">
         <h2>操作说明</h2>
-        <ul class="help-list">
+        <ul class="help-list help-kb">
           <li><b>WASD / 方向键</b> 移动角色</li>
           <li><b>SPACE</b> 翻滚冲刺(短暂无敌)</li>
           <li>武器<b>全自动</b>索敌开火, 近战以移动方向为准</li>
           <li>击杀敌人掉落<b>晶体</b>: 既是经验也是货币</li>
           <li>升级时<b>3 选 1</b> 强化; 波次结束进入<b>商店</b>补给</li>
-          <li><b>ESC</b> 暂停 · <b>M</b> 静音</li>
+          <li><b>ESC</b> 暂停 / <b>M</b> 静音</li>
+          <li>存活至第 <b>20 波</b> 击败最终 Boss 即胜利</li>
+        </ul>
+        <ul class="help-list help-touch">
+          <li><b>左摇杆</b> 移动角色</li>
+          <li><b>冲刺按钮</b> 翻滚冲刺(短暂无敌)</li>
+          <li>武器<b>全自动</b>索敌开火, 近战以移动方向为准</li>
+          <li>击杀敌人掉落<b>晶体</b>: 既是经验也是货币</li>
+          <li>升级时<b>3 选 1</b> 强化; 波次结束进入<b>商店</b>补给</li>
+          <li><b>暂停按钮</b> 暂停游戏</li>
           <li>存活至第 <b>20 波</b> 击败最终 Boss 即胜利</li>
         </ul>
         <button id="btn-close-help" class="btn btn-primary">明白了</button>
@@ -99,7 +109,7 @@
           <div id="shop-slots" class="shop-slots"></div>
         </div>
         <div class="shop-actions">
-          <button id="btn-reroll" class="btn btn-ghost">重掷 <span id="reroll-cost">10</span> ◆</button>
+          <button id="btn-reroll" class="btn btn-ghost">重掷 <span id="reroll-cost">8</span> ◆</button>
           <button id="btn-sell-mode" class="btn btn-ghost">出售武器</button>
           <button id="btn-next-wave" class="btn btn-primary">开始第 <span id="next-wave-num">2</span> 波</button>
         </div>
@@ -110,6 +120,7 @@
     <section id="screen-pause" class="overlay hidden">
       <div class="overlay-inner">
         <h2 class="overlay-title">已暂停</h2>
+        <div id="pause-stats" class="pause-stats"></div>
         <div class="title-menu">
           <button id="btn-resume" class="btn btn-primary">继续</button>
           <button id="btn-quit" class="btn btn-ghost">放弃本局</button>
@@ -136,6 +147,13 @@
       <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
       GitHub
     </a>
+
+    <!-- 触屏控制 (仅触屏设备显示) -->
+    <div id="touch-ui">
+      <div id="touch-stick" class="touch-stick"><div id="touch-knob" class="touch-knob"></div></div>
+      <button id="touch-dash" class="touch-btn touch-dash">冲刺</button>
+      <button id="touch-pause" class="touch-btn touch-pause">暂停</button>
+    </div>
   </div>
 </body>
 </html>

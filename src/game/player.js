@@ -244,8 +244,8 @@ export class Player {
       }
     });
 
-    // 被动: 残影脚下高亮
-    if (this.buffAfterimage > 0 && this.game.tick % 4 === 0) {
+    // 被动: 残影脚下高亮 (仅薇拉)
+    if (this.ch.passive.id === 'afterimage' && this.buffAfterimage > 0 && this.game.tick % 4 === 0) {
       this.game.particles.emit({
         x: this.x + (Math.random() - 0.5) * 0.5, y: 0.1, z: this.z + (Math.random() - 0.5) * 0.5,
         vx: 0, vy: 1.6, vz: 0, color: 0xffd257, life: 0.5, size: 0.34, sizeEnd: 0.05, drag: 2,

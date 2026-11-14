@@ -258,6 +258,8 @@ export class Engine {
     this.renderer.setSize(w, h);
     this.composer?.setSize(w, h);
     this.camera.aspect = w / h;
+    // 竖屏拉远视野: 避免横向可视范围过窄, 看不见射程内的敌人
+    this.camera.fov = w / h >= 1 ? 48 : Math.min(75, 48 / Math.pow(w / h, 0.6));
     this.camera.updateProjectionMatrix();
   }
 

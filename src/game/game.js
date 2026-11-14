@@ -52,6 +52,8 @@ export class Game {
     this.timeScale = 1;
     this.hitstop = 0;
     this.sellMode = false;
+    this._supTarget = null;
+    this._supStacks = 0;
     this.pendingLevels = 0;
     this._offers = [];
     this._rerolls = 0;
@@ -118,6 +120,9 @@ export class Game {
     this.runTime = 0;
     this.pendingLevels = 0;
     this.sellMode = false;
+    this._supTarget = null;
+    this._supStacks = 0;
+    this.input.touchDash = false;
     this._rerolls = 0;
 
     this.enemies.list.length = 0;
@@ -229,10 +234,17 @@ export class Game {
       } else {
         const item = ITEMS[(Math.random() * ITEMS.length) | 0];
         const tier = this._rollTier(0.6);
+        // 道具品阶真实生效: 属性按品阶倍率成长 (与升级稀有度同规则)
+        const mult = [1, 1.35, 1.75, 2.2][tier];
+        const scaled = {};
+        for (const [k, v] of Object.entries(item.stats)) {
+          scaled[k] = (k === 'heal' || k === 'maxHP') ? Math.round(v * mult) : v * mult;
+        }
+        const cost = tier < item.cost.length ? item.cost[tier] : Math.round(item.cost[item.cost.length - 1] * 1.3);
         offers.push({
-          kind: 'item', tier, itemId: item.id,
+          kind: 'item', tier, itemId: item.id, stats: scaled,
           name: item.name, icon: item.icon, color: item.color || TIER_COLORS[tier],
-          desc: item.desc, cost: Math.round(item.cost[tier] ?? item.cost[0]),
+          desc: this._scaleDesc(item.desc, mult), cost: Math.round(cost),
           sold: false,
         });
       }
@@ -265,7 +277,7 @@ export class Game {
       this.ui.toast(`获得 ${TIER_NAMES[offer.tier]} ${offer.name}`);
     } else {
       const item = ITEMS.find((i) => i.id === offer.itemId);
-      this.applyItem(item.stats, item.name);
+      this.applyItem(offer.stats || item.stats, item.name);
     }
     this.ui.showShop(this.shopData());
   }
@@ -420,34 +432,41 @@ export class Game {
     if (p.ch.passive.id === 'bloodrage' && p.hp < p.maxHp() * 0.5) mult *= 1.6;
 
     let crit = chance(st.get('critChance'));
-    if (p.ch.passive.id === 'afterimage' && p.consumeAfterimage()) crit = true;
-    const dmg = base * mult * (crit ? st.get('critMult') : 1);
+    let critMult = st.get('critMult');
+    if (p.ch.passive.id === 'afterimage' && p.consumeAfterimage()) {
+      crit = true;
+      critMult = Math.max(critMult, 2.2);
+    }
+    const dmg = base * mult * (crit ? critMult : 1);
     return { dmg: Math.max(1, dmg), crit };
   }
 
   hitEnemy(e, dmg, opts = {}) {
     if (!e || !e.active) return;
     let amount = dmg;
-    // 卡尔: 火力压制
+    // 卡尔: 火力压制 (换目标清空层数)
     const src = opts.source;
     if (this.player.ch.passive.id === 'suppression' && src) {
-      if (e.lastSupOwner === this.player.ch.id) {
-        e.suppression = Math.min(5, (e.suppression || 0) + 1);
-      } else {
-        e.suppression = 1;
-        e.lastSupOwner = this.player.ch.id;
+      if (this._supTarget !== e || !this._supTarget.active) {
+        this._supTarget = e;
+        this._supStacks = 0;
       }
-      amount *= 1 + 0.12 * e.suppression;
+      this._supStacks = Math.min(5, this._supStacks + 1);
+      amount *= 1 + 0.12 * this._supStacks;
     }
-    // 梅琳: 眩晕
+    // 梅琳: 元素命中 15% 眩晕 0.6 秒 (仅过载电容)
+    if (opts.kind === 'elem' && this.player.ch.passive.id === 'capacitor' && chance(0.15)) {
+      e.stun = Math.max(e.stun, 0.6);
+    }
     if (opts.stun) e.stun = Math.max(e.stun, opts.stun);
 
     amount = Math.min(amount, e.hp + 1);
     this.enemies.damage(e, amount, { kb: opts.kb || 0, dirx: opts.dirx || 0, dirz: opts.dirz || 0 });
     this.damageDealt += amount;
 
-    // 吸血
-    const ls = this.stats.get('lifesteal');
+    // 吸血 (格罗什血怒: 半血以下 +15%)
+    let ls = this.stats.get('lifesteal');
+    if (this.player.ch.passive.id === 'bloodrage' && this.player.hp < this.player.maxHp() * 0.5) ls += 0.15;
     if (ls > 0 && this.player.alive) this.player.heal(amount * ls);
 
     // 飘字
@@ -508,12 +527,6 @@ export class Game {
         }
       }
     }
-  }
-
-  // Boss 踏地: 对玩家范围伤害
-  damageRing(x, z, r, dmg) {
-    const p = this.player;
-    if (p.alive && dist2(x, z, p.x, p.z) < r * r) p.takeDamage(dmg, { fromX: x, fromZ: z });
   }
 
   thornBurst(p) {
@@ -631,7 +644,7 @@ export class Game {
   togglePause(on) {
     if (on && this.state === 'playing') {
       this.state = 'paused';
-      this.ui.show('pause');
+      this.ui.showPause();
     } else if (!on && this.state === 'paused') {
       this.state = 'playing';
       this.ui.show('hud');
